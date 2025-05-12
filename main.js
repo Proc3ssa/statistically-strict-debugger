@@ -8,8 +8,8 @@ const nav = document.querySelector('nav');
 const loader = document.querySelector('.loader-container');
 
 // imports
-import Light from './js/basicSettings.js';
-import AdvanceSettings from './js/advanceSettings.js';
+import Light from './public/basicSettings.js';
+import AdvanceSettings from './public/advanceSettings.js';
 
 // object creation
 const lightController = new Light();
