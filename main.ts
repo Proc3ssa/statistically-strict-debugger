@@ -1,6 +1,6 @@
 
-import Light from './basicSettings.js';
-import AdvanceSettings from './advanceSettings.js';
+import Light from './src/basicSettings.ts';
+import AdvanceSettings from './src/advanceSettings.ts';
 
 const homepageButton = document.querySelector<HTMLButtonElement>('.entry_point');
 const homepage = document.querySelector<HTMLElement>('main');
