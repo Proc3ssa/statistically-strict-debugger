@@ -1,4 +1,4 @@
-'use script'
+'use strict'
 // elements declarations
 const homepageButton = document.querySelector('.entry_point');
 const homepage = document.querySelector('main');
@@ -28,7 +28,7 @@ homepageButton.addEventListener('click', function(e) {
     setTimeout(() => {
         lightController.removeHidden(mainRoomsContainer);
         lightController.removeHidden(nav);
-    }, 1000);
+    }, 6000);
 })
 
 
@@ -89,4 +89,73 @@ advanceFeaturesContainer.addEventListener('click', (e) => {
         }
     }
 });
+// helper functions
+const changeImg = function(element) {
+    let temp, next;
+
+    temp = element.attributes[0].value;
+    next = element.attributes[2].value;
+
+    element.src = next;
+    element.setAttribute('data-altWifiImg', temp);
+}
+
+
+// handling events in the nav section
+nav.addEventListener('click', function(e) {
+    const current = e.target;
+    // toggling wifi network
+    if (current.closest('.network-container')) {
+        const img = document.querySelector('.img_svg-container > img');
+        const statusMessage = document.querySelector('.wifi_notification > p')
+
+        if (isWifiActive) {
+            isWifiActive = false;
+            changeImg(img);
+            const message = 'Wifi is currently off'
+            lightController.displayNotification(message, 'afterend', mainRoomsContainer);
+            lightController.removeNotification(document.querySelector('.notification'));
+            return;
+        }
+        if (!isWifiActive) {
+            isWifiActive = true;
+            changeImg(img);
+            const message = 'Wifi network now is active'
+            lightController.displayNotification(message, 'afterend', mainRoomsContainer);
+            lightController.removeNotification(document.querySelector('.notification'));
+            return;
+        }
+    }
+
+    // toggling light switch
+    if (current.closest('.general_light_switch')) {
+        const message = `Feature not accessible yet.
+                         This feature is a general switch for all components.`
+
+        lightController.displayNotification(message, 'afterend', mainRoomsContainer)
+        lightController.removeNotification(document.querySelector('.notification'));
+    }
+
+})
+
+
+// handing wifi on mouse hover
+const mainWifiContainer = document.querySelector('.wifi-container');
+mainWifiContainer.addEventListener('mouseenter', function(e) {
+    const status = document.querySelector('.wifi_notification > p');
+
+    const message = isWifiActive ? 'Wifi connections available' : 'Wifi is currently not available'
+
+    status.textContent = message;
+    status.classList.remove('hidden');
+
+})
+mainWifiContainer.addEventListener('mouseleave',function(e) {
+    const status = document.querySelector('.wifi_notification > p');
+    const connectionListContainer = document.querySelector('.wifi_connection_list_container');
+
+    if (!connectionListContainer.classList.contains('hidden')) return;
+    status.classList.add('hidden');
+
+})
 

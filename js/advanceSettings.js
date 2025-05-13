@@ -1,22 +1,18 @@
 'use strict'
 
 import General from "./general.js";
-import Light from './basicSettings.js';
-
-class AdvanceSettings extends Light {
+class AdvanceSettings extends General {
     constructor () {
         super();
 
     }
 
-    #markup (component) {
+    markup (component) {
         const {name, numOfLights, autoOn, autoOff} = component;
         return `
-        <div class="advanced_features">
-            <h3>Advanced features</h3>
             <section class="component_summary">
                 <div>
-                    <p class="component_name">${this.capFirstLetter(name)}</p>
+                    <p class="component_name">${this.capFirstLetter(name)} lights</p>
                     <p class="number_of_lights">${numOfLights}</p>
                 </div>
                 <div>
@@ -66,18 +62,11 @@ class AdvanceSettings extends Light {
                         <canvas id="myChart"></canvas>
                     </div>
                 </section>
-                <button class="close-btn">
-                    <img src="./assets/svgs/close.svg" alt="close button svg icon">
-                </button>
             </section>
-            <button class="close-btn">
-                <img src="./assets/svgs/close.svg" alt="close button svg icon">
-            </button>
-        </div>
         `
     }
 
-    #analyticsUsage(data) {
+    analyticsUsage(data) {
         const ctx = this.selector('#myChart');
         new Chart(ctx, {
             type: 'line',
@@ -106,10 +95,10 @@ class AdvanceSettings extends Light {
         this.removeHidden(parentElement);
         
         // display modal view
-        this.renderHTML(this.#markup(componentData), 'afterbegin', parentElement);
+        this.renderHTML(this.markup(componentData), 'afterbegin', parentElement);
 
         // graph display
-        this.#analyticsUsage(componentData['usage']);
+        this.analyticsUsage(componentData['usage']);
     }
 
     displayCustomization(selectedElement) {
@@ -231,14 +220,15 @@ class AdvanceSettings extends Light {
                     now.getMinutes() === time.getMinutes() &&
                     now.getSeconds() === time.getSeconds()
                 ) {
-                    resolve(this.toggleLightSwitch(component['element']))
+                    this.toggleLightSwitch(component['element']);
+                    resolve(true);
 
                     // stop timer
                     clearInterval(intervalId);
-                    
+
                 }
             }
-        
+
             // Check every second
             const intervalId = setInterval(checkAndTriggerAlarm, 1000);
 
@@ -248,6 +238,7 @@ class AdvanceSettings extends Light {
     async automateLight (time, component) {
         const formattedTime = this.formatTime(time);
         return await this.timer(formattedTime, true, component);
+
     }
 
 
