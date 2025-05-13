@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TypeScript Code Conversion
 
 This document contains the TypeScript versions of the original JavaScript files (`general.js`, `basicSettings.js`, `advanceSettings.js`, `main.js`).
@@ -780,3 +781,6 @@ if (!homepageButton || !homepage || !mainRoomsContainer || !advanceFeaturesConta
      
 
 } 
+=======
+###Kaish
+>>>>>>> c22e67321915b8e3e5c44efa6435d8ff22dee057
