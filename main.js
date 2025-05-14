@@ -4,22 +4,18 @@ const homepageButton = document.querySelector('.entry_point');
 const homepage = document.querySelector('main');
 const mainRoomsContainer = document.querySelector('.application_container');
 const nav = document.querySelector('nav');
-// const basicSettings = document.querySelector('.basic_settings');
-// const basicSettingsButtons = document.querySelectorAll('.basic_settings_buttons');
-// const allRooms = document.querySelectorAll('.rooms');
-// const mainWifiContainer = document.querySelector('.wifi-container');
 
 const loader = document.querySelector('.loader-container')
 
-// advanced settings elements
+
 
 
 // helper variables
 const wifiConnection = [
-    {id: 0, wifiName: 'Inet service', signal: 'excellent'},
-    {id: 1, wifiName: 'Kojo_kwame121', signal: 'poor'},
-    {id: 2, wifiName: 'spicyalice', signal: 'good'},
-    {id: 3, wifiName: 'virus', signal: 'good'},
+    {id: 0, wifiName: 'Processor connect', signal: 'excellent'},
+    {id: 1, wifiName: 'Faisal123', signal: 'poor'},
+    {id: 2, wifiName: 'Training', signal: 'good'},
+    {id: 3, wifiName: 'Frontend', signal: 'good'},
 ]
 
 
@@ -57,7 +53,7 @@ const gridLightButtonFunctionality = function(lightButton, notificationMessage) 
 
 
 // Event handlers
-// hidden homepage after button is clicked
+// go to menu/rooms after button is clicked
 homepageButton.addEventListener('click', function(e) {
     homepage.classList.add('hidden');
     loader.classList.remove('hidden')
@@ -96,10 +92,44 @@ nav.addEventListener('click', function(e) {
 
     // toggling light switch
     if (current.closest('.general_light_switch')) {
-        const message = `Feature not accessible yet.
-                         This feature is a general switch for all components.`
+        const generalSwitchButton = current.closest('.general_light_switch');
+        const generalSwitchImg = generalSwitchButton.querySelector('img');
+        const allLightButtons = document.querySelectorAll('.basic_settings_buttons > button:first-child img');
+        const isGeneralLightOn = generalSwitchImg.getAttribute('src') === './assets/svgs/light_bulb.svg';
 
-        lightController.displayNotification(message, 'afterend', mainRoomsContainer)
+        allLightButtons.forEach(lightButton => {
+            const componentImg = lightButton.closest('.rooms').querySelector(':first-child');
+            const slider = lightButton.closest('.basic_settings').querySelector('input');
+
+            if (isGeneralLightOn) {
+                // Turn all lights off
+                lightButton.setAttribute('src', './assets/svgs/light_bulb_off.svg');
+                lightButton.setAttribute('data-lightOn', './assets/svgs/light_bulb.svg');
+                lightButton.style.filter = `drop-shadow(0 0 0)`;
+                componentImg.style.filter = `brightness(0)`;
+                slider.value = 0;
+                lightController.isLightOff = true;
+                lightController.lightIntensity = 0;
+            } else {
+                // Turn all lights on
+                lightButton.setAttribute('src', './assets/svgs/light_bulb.svg');
+                lightButton.setAttribute('data-lightOn', './assets/svgs/light_bulb_off.svg');
+                lightButton.style.filter = `drop-shadow(0 0 5px #ffd600)`;
+                componentImg.style.filter = `brightness(0.5)`;
+                slider.value = 5;
+                lightController.isLightOff = false;
+                lightController.lightIntensity = 5;
+            }
+        });
+
+        // Toggle the general switch button image
+        const generalSwitchDataElement = generalSwitchImg.dataset.lighton;
+        let temp;
+        lightController.lightSwitch(generalSwitchImg, generalSwitchDataElement, temp);
+
+
+        const message = isGeneralLightOn ? 'All lights are off' : 'All lights are on';
+        lightController.displayNotification(message, 'afterend', mainRoomsContainer);
         lightController.removeNotification(document.querySelector('.notification'));
     }
     
@@ -118,7 +148,6 @@ mainRoomsContainer.addEventListener('click', function (e) {
         const slider = lightButton.closest('.basic_settings').querySelector('input');
         
         
-        /** alternating light display */
         if (lightButton.getAttribute('src') === './assets/svgs/light_bulb.svg') {
             lightController.isLightOff = true;
             lightController.lightIntensity = 0
@@ -148,7 +177,6 @@ mainRoomsContainer.addEventListener('click', function (e) {
 
         selectedComponent = e.target.closest('.rooms').querySelector('p').textContent.toLowerCase();
 
-        // console.log(advancedSettings, selectedComponent);
         const markup = advancedSettings.getSelectedSettings(selectedComponent);
 
         
@@ -167,7 +195,7 @@ mainRoomsContainer.addEventListener('click', function (e) {
               labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'],
               datasets: [{
                 label: 'Hours of usage',
-                // data: [12, 19, 3, 5, 2, 3, 8],
+                
                 data: data,
                 borderWidth: 1
               }]
@@ -183,17 +211,17 @@ mainRoomsContainer.addEventListener('click', function (e) {
 
     };
     
-    // handing wifi
+    // handle wifi 
     if (e.target.closest('.img_svg-container')) {
         let wifiParentContainer = e.target.closest('.wifi-container');
         let wifiStatusMessage = wifiParentContainer.querySelector('.wifi_notification p');
         const connectionListContainer = wifiParentContainer.querySelector('.wifi_connection_list_container');
 
-        // toggling wifi status message - when on/off
+        
         wifiStatusMessage.classList.toggle('hidden');
         
         if (!wifiStatusMessage.classList.contains('hidden')) {
-            // console.log(isWifiActive);
+           
             const statusMessage = isWifiActive ? 'Wifi connections available' : 'Wifi is currently not available'
             wifiStatusMessage.textContent = statusMessage;
         }
@@ -257,7 +285,7 @@ mainWifiContainer.addEventListener('mouseleave',function(e) {
 
 // when the slider is moved
 mainRoomsContainer.addEventListener('change', function(e) {
-    // when wifi is off disable functionality
+    // when wifi is off disable lights
     if (!isWifiActive) return;
 
     if (!e.target.closest('.slider')) return;
@@ -287,22 +315,6 @@ mainRoomsContainer.addEventListener('change', function(e) {
     
 })
 
-/**default settings / customize
- * @10:00pm the bedroom lights go off => time to sleep
- * @6:30am the bedroom lights turn on => time to wake up
- * {
- *  component: bedroom,
- *  numberOfLights: 3,
- *  isLightOff: true,
- *  defaultTimeOff: 10:00pm,
- *  defaultTimeOn: 6:30am,
- *  
- * }
- * 
- * @6:00pm the outside lights turn on => it's evening
- * @6:00am the outside lights go off => it's morning
- * 
- */
 
 // Advance settings
 const advancedFeaturesContainer = document.querySelector('.advanced_features_container');
@@ -334,37 +346,22 @@ advancedFeaturesContainer.addEventListener('click', async function(e) {
             timeElement.textContent = updatedTime;
             const response = await advancedSettings.automateLight(updatedTime, selectedComponent);
 
-            // console.log(response);
+           
             if (response) {
-                // console.log('hi');
-
-                // console.log(lightController);
+                
                 const slider = document.querySelector('input[type="range"]');
                 const element = document.querySelector(`.${selectedComponent}`);
 
-                // console.log(element)
-
-                // console.log(slider);
+               
 
                 slider.value = lightController.lightIntensity;
 
-                // lightController.lightIntensity = 5;
-                // slider.value = lightController.lightIntensity;
                 
-                // lightButton.style.filter = `drop-shadow(0 0 ${lightController.lightIntensity}px #ffd600)`; 
-                // componentImg.style.filter = `brightness(${lightController.lightIntensity / 10})`;
-                // lightController.isLightOff = false;
-                // gridLightButtonFunctionality(lightButton, 'lights are on');
-                // return;
                 
             }
 
             console.log(advancedSettings.automateLight(updatedTime, selectedComponent));
 
-            // advancedSettings.automateLight(updatedTime);
-
-
-            // console.log(lightController.componentsData[selectedComponent].isLightOff);
             
             return;
         }
@@ -377,9 +374,9 @@ advancedFeaturesContainer.addEventListener('click', async function(e) {
         }
 
 
-        // return;
+        
 
-        // there should be a notification popup
+        //notification 
     }
     if (currentElement.textContent === 'Cancel') {
         const inputElement = currentElement.parentElement.parentElement.querySelector('input');
@@ -393,50 +390,10 @@ advancedFeaturesContainer.addEventListener('click', async function(e) {
 
 closeButton.addEventListener('click', function() {
     const parent = document.querySelector('.advanced_features');
-    parent.replaceChildren(parent.firstElementChild); // remove children elements expect the first child
+    parent.replaceChildren(parent.firstElementChild); 
     advancedFeaturesContainer.classList.add('hidden');
 })
 
-// const time = (advancedSettings.componentsData.bathroom.autoOn);
-// // advancedSettings.automateLight(time);
-// const formattedTime = advancedSettings.formatTime(time);
-
-// const timer = function (time, message) {
-//     // console.log(time)
-//     function checkAndTriggerAlarm() {
-//         const now = new Date();
-//         // console.log(formattedTime, now);
-//         if (
-//             now.getHours() === time.getHours() &&
-//             now.getMinutes() === time.getMinutes() &&
-//             now.getSeconds() === time.getSeconds()
-//         ) {
-//             console.log(message);
-
-//             // lightController.componentsData
-    
-//             lightController.lightIntensity = 5;
-//             slider.value = lightController.lightIntensity;
-            
-//             lightButton.style.filter = `drop-shadow(0 0 ${lightController.lightIntensity}px #ffd600)`; 
-//             componentImg.style.filter = `brightness(${lightController.lightIntensity / 10})`;
-//             lightController.isLightOff = false;
-//             gridLightButtonFunctionality(lightButton, 'lights are on');
-//             return;
-//             // this.isLightOff = false;
-//             // if (!lightController.isLightOff) {
-//             // }
-//         }
-//     }
-    
-//     // Check every second
-//     setInterval(checkAndTriggerAlarm, 1000);
-    
-// }
-// timer(formattedTime, 'hello...')
-
-// const wifiLogo = document.querySelector('.img_svg-container > img');
-// function to dynamical change image element with dataset
 const changeImg = function(element) {
     let temp, next;
 
@@ -447,126 +404,6 @@ const changeImg = function(element) {
     element.setAttribute('data-altWifiImg', temp);
 }
 
-// changeImg(wifiLogo);
 
-
-
-
-
-
-
-// console.log(advancedSettings.componentsData.bathroom.autoOn)
-// const time = advancedSettings.formatTime('9:23');
-// advancedSettings.timer(time, 'Hello welcome')
-
-/**
- * when i set the time, the clock or setInterval function function would keep tract and call the callback fn when the time is up
- */
-
-
-/**
- * a function that is waiting to execute a functionality
- * the function waits for multiple components or data object
- */
-
-// console.log(advancedSettings.getObjectDetails());
-// const date = new Date();
-// const hours = date.getHours();
-// const mins = date.getMinutes();
-
-// const changeToSeconds = function(time) {
-
-//     const [hours, mins] = time.split(':');
-    
-//     const hourToSeconds = +hours * 60 * 60;
-//     const minsToSeconds = +mins * 60;
-
-//     return hourToSeconds + minsToSeconds;
-// }
-
-// // console.log(changeToSeconds('01:02'))
-// // console.log(new Date('17:35'))
-
-// // console.log(new Date(Date.now()))
-
-// const getCurrentTimeInSeconds = function() {
-//     const now = Date.now();
-//     const date = new Date(now);
-//     const hours = date.getHours();
-//     const mins = date.getMinutes();
-
-//     const time = `${hours}:${mins}`;
-//     // console.log(time);
-
-//     const seconds = changeToSeconds(time)
-//     // console.log(seconds);
-
-//     return seconds;
-
-
-// }
-
-// // console.log(getCurrentTimeInSeconds())
-
-// const difference = changeToSeconds('17:31') - getCurrentTimeInSeconds();
-// const toMilliseconds = difference * 1000;
-// // console.log(difference, toMilliseconds);
-
-
-// setTimeout(() => {
-//     console.log('time up...')
-// }, toMilliseconds);
-
-
-// const timer = new Date()
-// console.log(timer);
-// const hour = timer.getHours();
-// const min = timer.getMinutes();
-
-
-/**test function */
-// function setRepeatingAlarm(time, message) {
-//     function checkAndTriggerAlarm() {
-//         const now = new Date();
-//         if (
-//             now.getHours() === time.getHours() &&
-//             now.getMinutes() === time.getMinutes() 
-            
-//             // &&
-//             // now.getSeconds() === time.getSeconds()
-//         ) {
-//             console.log(message);
-//         }
-//     }
-
-//     // Check every second
-//     setInterval(checkAndTriggerAlarm, 1000);
-// }
-
-// // Example usage:
-// const dailyAlarmTime = new Date();
-// dailyAlarmTime.setHours(21); // 2 PM
-// dailyAlarmTime.setMinutes(59);
-// // dailyAlarmTime.setSeconds(0);
-
-// setRepeatingAlarm(dailyAlarmTime, 'This is your daily alarm!');
-
-
-// const formatTime = function(time) {
-//     const [hour, min] = time.split(':');
-    
-//     const dailyAlarmTime = new Date();
-//     dailyAlarmTime.setHours(hour); 
-//     dailyAlarmTime.setMinutes(min);
-//     // dailyAlarmTime.setSeconds(0);
-//     console.log(dailyAlarmTime);
-//     return dailyAlarmTime;
-// }
-// console.log(formatTime('9:10'))
-
-// const time = '11:32';
-// const timeTaken = new Date();
-// console.log(timeTaken.setHours(11))
-// console.log(timeTaken.setHours('11'))
 
 

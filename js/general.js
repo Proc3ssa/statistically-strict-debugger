@@ -10,8 +10,7 @@ class General {
     }
 
     constructor () {
-        // this.autoOn = autoOn;
-        // this.autoOff = autoOff;
+        
         this.isLightOff = true;
         this.lightIntensity = 5;
     }

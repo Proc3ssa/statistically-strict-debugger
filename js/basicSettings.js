@@ -2,17 +2,12 @@
 
 import General from "./general.js";
 
-// basics settings element
-// const allRooms = document.querySelectorAll('.rooms');
-// const mainRoomsContainer = document.querySelector('.application_container');
-// const basicSettings = document.querySelector('.basic_settings');
-// const basicSettingsButtons = document.querySelectorAll('.basic_settings_buttons');
+
 
 class Light extends General {
     constructor() {
         super();
-        // this.isLightOff = true;
-        // this.lightIntensity = 5;
+        
     }
 
     renderHTML (element, position, container) {
