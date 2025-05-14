@@ -1,6 +1,7 @@
 'use strict'
 
 import General from "./general.js";
+
 class AdvanceSettings extends General {
     constructor () {
         super();
@@ -12,7 +13,7 @@ class AdvanceSettings extends General {
         return `
             <section class="component_summary">
                 <div>
-                    <p class="component_name">${this.capFirstLetter(name)} lights</p>
+                    <p class"component_name">${this.capFirstLetter(name)} lights</p>
                     <p class="number_of_lights">${numOfLights}</p>
                 </div>
                 <div>
@@ -66,108 +67,6 @@ class AdvanceSettings extends General {
         `
     }
 
-    analyticsUsage(data) {
-        const ctx = this.selector('#myChart');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'],
-              datasets: [{
-                label: 'Hours of usage',
-                data: data,
-                borderWidth: 1
-              }]
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true
-                }
-              }
-            }
-        });
-    }
-
-    modalPopUp(element) {
-        const selectedRoom = this.getSelectedComponentName(element);
-        const componentData = this.getComponent(selectedRoom);
-        const parentElement = this.selector('.advanced_features_container');
-        this.removeHidden(parentElement);
-        
-        // display modal view
-        this.renderHTML(this.markup(componentData), 'afterbegin', parentElement);
-
-        // graph display
-        this.analyticsUsage(componentData['usage']);
-    }
-
-    displayCustomization(selectedElement) {
-        const element = this.closestSelector(selectedElement, '.customization', '.customization-details')
-        this.toggleHidden(element);
-    }
-
-    closeModalPopUp() {
-        const parentElement = this.selector('.advanced_features_container');
-        const childElement = this.selector('.advanced_features');
-
-        // remove child element from the DOM
-        childElement.remove()
-        // hide parent element
-        this.addHidden(parentElement);
-    }
-
-    customizationCancelled(selectedElement, parentSelectorIdentifier) {
-        const element = this.closestSelector(selectedElement, parentSelectorIdentifier, 'input');
-        element.value = '';
-        return;
-    }
-
-    customizeAutomaticOnPreset(selectedElement) {
-        const element = this.closestSelector(selectedElement, '.defaultOn', 'input');
-        const { value } = element;
-        
-        // when value is falsy
-        if (!!value) return;
-        
-        const component = this.getComponentData(element, '.advanced_features', '.component_name');
-        component.autoOn = value;
-        element.value = '';
-
-        // selecting display or markup view
-        const spanElement = this.selector('.auto_on > span:last-child');
-        this.updateMarkupValue(spanElement, component.autoOn);
-
-        // update room data with element
-        this.setComponentElement(component);
-        
-        // handle light on automation
-        this.automateLight(component['autoOn'], component);
-
-    }
-
-    customizeAutomaticOffPreset(selectedElement) {
-        const element = this.closestSelector(selectedElement, '.defaultOff', 'input');
-        const { value } = element;
-
-        // when value is falsy
-        if (!!value) return; 
-        
-        const component = this.getComponentData(element, '.advanced_features', '.component_name');
-        component.autoOff = value;
-        element.value = '';
-
-        // selecting display or markup view
-        const spanElement = this.selector('.auto_off > span:last-child');
-        this.updateMarkupValue(spanElement, component.autoOff);
-
-        // update room data with element
-        this.setComponentElement(component);
-        
-        // handle light on automation
-        this.automateLight(component['autoOff'], component);
-
-    }
-
     getSelectedComponent (componentName) {
         if (!componentName) return this.componentsData;
         const component = this.componentsData[componentName.toLowerCase()];
@@ -175,6 +74,9 @@ class AdvanceSettings extends General {
     }
 
     getSelectedSettings (componentName) {
+        // if (!componentName) return this.componentsData;
+        // const component = this.componentsData[componentName.toLowerCase()];
+        // return this.markup(component);
         return this.markup(this.getSelectedComponent(componentName));
 
     }
@@ -203,34 +105,25 @@ class AdvanceSettings extends General {
         return dailyAlarmTime;
     };
 
-    timeDifference (selectedTime) {
-        const now = new Date();
-        const setTime = this.formatTime(selectedTime) - now;
-        console.log(setTime, now);
-        return setTime;
-    }
-
     async timer (time, message, component) {
         return new Promise ((resolve, reject) => {
             const checkAndTriggerAlarm = () => {
                 const now = new Date();
-                
+                console.log(time, now);
                 if (
                     now.getHours() === time.getHours() &&
                     now.getMinutes() === time.getMinutes() &&
                     now.getSeconds() === time.getSeconds()
                 ) {
-                    this.toggleLightSwitch(component['element']);
-                    resolve(true);
-
-                    // stop timer
-                    clearInterval(intervalId);
-
+                    console.log(message);
+                    this.isLightOff = false;
+                    this.componentsData[component].isLightOff = message;
+                    resolve (this.componentsData[component].isLightOff)
                 }
             }
-
+        
             // Check every second
-            const intervalId = setInterval(checkAndTriggerAlarm, 1000);
+            setInterval(checkAndTriggerAlarm, 1000);
 
         })
     }
@@ -238,10 +131,8 @@ class AdvanceSettings extends General {
     async automateLight (time, component) {
         const formattedTime = this.formatTime(time);
         return await this.timer(formattedTime, true, component);
-
+        
     }
-
-
 
 
 }
