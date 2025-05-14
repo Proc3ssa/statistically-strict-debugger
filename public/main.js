@@ -20,8 +20,8 @@ const wifiConnection = [
 
 
 // imports
-import Light from './js/basicSettings.js';
-import AdvanceSettings from './js/advanceSettings.js';
+import Light from './basicSettings.js';
+import AdvanceSettings from './advanceSettings.js';
 
 // object creation
 const lightController = new Light();
