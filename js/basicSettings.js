@@ -84,7 +84,7 @@ class Light extends General {
             return;
         }
         
-        componentData.isLightOn = false;
+        componentData.isLightOn = intensity > 0;
         this.sliderLight(componentData.isLightOn, lightSwitch);
     }
 
