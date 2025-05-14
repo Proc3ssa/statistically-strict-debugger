@@ -1,14 +1,16 @@
-'use strict'
-
-import General from "./general.js";
+import General, { Component } from "./general";
 
 class AdvanceSettings extends General {
+    // Assuming componentsData is inherited from General or initialized elsewhere
+    // It appears to be an object mapping component names (lowercase string) to Component objects
     constructor () {
         super();
-
+        // Initialize properties if not inherited from General
+        // this.componentsData = {};
+        // this.isLightOff = false;
     }
 
-    markup (component: { name: string; numOfLights: number; autoOn: string; autoOff: string; }) {
+    markup (component: Component): string {
         const {name, numOfLights, autoOn, autoOff} = component;
         return `
             <section class="component_summary">
@@ -64,30 +66,39 @@ class AdvanceSettings extends General {
                     </div>
                 </section>
             </section>
-        `
+        `;
     }
 
-    getSelectedComponent (componentName: string | undefined) {
-        if (!componentName) return this.componentsData;
+    getSelectedComponent (componentName: string): Component | undefined {
         const component = this.componentsData[componentName.toLowerCase()];
         return component;
     }
 
-    getSelectedSettings (componentName: string | undefined) {
-        return this.markup(this.getSelectedComponent(componentName));
-
+    getSelectedSettings (componentName: string): string | undefined {
+        const selectedComponent = this.getSelectedComponent(componentName);
+        if (selectedComponent) {
+             return this.markup(selectedComponent);
+        }
+        return undefined; // Or handle the case where component is not found
     }
 
-    setNewData (component: string, key: 'autoOn' | 'autoOff', data: string) {
-        const selectedComponent = this.componentsData[component.toLowerCase()];
-        return selectedComponent[key] = data;
+    setNewData<K extends keyof Component>(componentName: string, key: K, data: Component[K]): Component[K] | undefined {
+        const selectedComponent = this.componentsData[componentName.toLowerCase()];
+        if (selectedComponent) {
+            // Assert selectedComponent is of type Component within this block
+            const component: Component = selectedComponent;
+            component[key] = data;
+            return component[key];
+        }
+        return undefined; // Or handle the case where component is not found
     }
 
-    capFirstLetter (word: string) {
-        return word.replace(word.at(0)!, word.at(0)!.toUpperCase())
+    capFirstLetter (word: string): string {
+        if (!word) return word;
+        return word.replace(word[0]!, word[0]!.toUpperCase());
     }
 
-    getObjectDetails() {
+    getObjectDetails(): this {
         return this;
     }
 
@@ -95,14 +106,14 @@ class AdvanceSettings extends General {
         const [hour, min] = time.split(':');
 
         const dailyAlarmTime = new Date();
-        dailyAlarmTime.setHours(parseInt(hour));
-        dailyAlarmTime.setMinutes(parseInt(min));
+        dailyAlarmTime.setHours(parseInt(hour, 10));
+        dailyAlarmTime.setMinutes(parseInt(min, 10));
         dailyAlarmTime.setSeconds(0);
 
         return dailyAlarmTime;
     };
 
-    async timer (time: Date, message: boolean, component: string): Promise<boolean> {
+    async timer (time: Date, message: boolean, componentName: string): Promise<boolean | undefined> {
         return new Promise ((resolve, reject) => {
             const checkAndTriggerAlarm = () => {
                 const now = new Date();
@@ -113,25 +124,32 @@ class AdvanceSettings extends General {
                     now.getSeconds() === time.getSeconds()
                 ) {
                     console.log(message);
-                    this.isLightOff = false;
-                    this.componentsData[component].isLightOff = message;
-                    resolve (this.componentsData[component].isLightOff)
+                    this.isLightOff = false; // This seems inconsistent with the message parameter
+                    const component = this.componentsData[componentName];
+                    if (component) {
+                        component.isLightOff = message;
+                        resolve (component.isLightOff);
+                    } else {
+                        reject(new Error(`Component ${componentName} not found`));
+                    }
                 }
-            }
+            };
 
             // Check every second
-            setInterval(checkAndTriggerAlarm, 1000);
+            const intervalId = setInterval(checkAndTriggerAlarm, 1000);
 
-        })
+            // Optional: Add a mechanism to clear the interval if needed
+            // For example, after a certain time or condition is met
+            // setTimeout(() => clearInterval(intervalId), 24 * 60 * 60 * 1000); // Clear after 24 hours
+        });
     }
 
-    async automateLight (time: string, component: string): Promise<boolean> {
+    async automateLight (time: string, componentName: string): Promise<boolean | undefined> {
         const formattedTime = this.formatTime(time);
-        return await this.timer(formattedTime, true, component);
-
+        // Assuming automateLight is intended to turn the light ON at the specified time
+        // The `true` message in timer suggests turning the light ON.
+        return await this.timer(formattedTime, true, componentName);
     }
-
-
 }
 
 export default AdvanceSettings;

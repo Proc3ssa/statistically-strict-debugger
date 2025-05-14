@@ -37,10 +37,12 @@ class Light extends General {
         }, 5000);
     }
 
-    lightSwitch (lightButton: Element, dataElement: string, temp: string) {
+    lightSwitch (lightButton: Element, dataElement: string, temp: string | null) {
         temp = lightButton.attributes[0].textContent;
         lightButton.setAttribute('src', dataElement);
-        lightButton.setAttribute('data-lightOn', temp);
+        if (temp) {
+            lightButton.setAttribute('data-lightOn', temp);
+        }
     }
 
 }
