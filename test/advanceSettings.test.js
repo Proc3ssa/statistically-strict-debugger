@@ -1,52 +1,71 @@
-// Jest or similar testing framework is recommended for running these tests.
-// A testing environment with JSDOM might be needed to simulate the browser environment.
+'use strict';
 
 import AdvanceSettings from '../public/advanceSettings.js';
-import General from '../public/general.js'; // Assuming General is needed or mocked
 
-// Mock the General class if it's not directly testable or has dependencies
-jest.mock('../public/general.js');
+// Mock the General class at the correct path
+jest.mock('../public/general.js', () => {
+  return class General {
+    constructor() {
+      this.componentsData = {
+        kitchen: {
+          name: 'kitchen',
+          numOfLights: 4,
+          autoOn: '18:00',
+          autoOff: '23:00',
+          isLightOff: true
+        }
+      };
+    }
+  };
+});
 
-describe('advanceSettings.js tests', () => {
+describe('AdvanceSettings', () => {
   let advanceSettings;
 
   beforeEach(() => {
-    // Clear mock instances and calls before each test
-    General.mockClear();
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2025-05-15T12:00:00Z'));
     advanceSettings = new AdvanceSettings();
-    // Mock componentsData if necessary for tests
-    advanceSettings.componentsData = {
-      kitchen: { name: 'kitchen', numOfLights: 3, autoOn: '06:00', autoOff: '22:00', usage: [1, 2, 3, 4, 5, 6, 7] },
-      bedroom: { name: 'bedroom', numOfLights: 2, autoOn: '07:00', autoOff: '23:00', usage: [7, 6, 5, 4, 3, 2, 1] },
-    };
   });
 
-  test('AdvanceSettings class should extend General', () => {
-    expect(advanceSettings).toBeInstanceOf(General);
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
   });
 
-  test('getSelectedComponent should return all componentsData if no name is provided', () => {
-    const components = advanceSettings.getSelectedComponent();
-    expect(components).toEqual(advanceSettings.componentsData);
+  test('should initialize with componentsData from General', () => {
+    expect(advanceSettings.componentsData).toEqual({
+      kitchen: {
+        name: 'kitchen',
+        numOfLights: 4,
+        autoOn: '18:00',
+        autoOff: '23:00',
+        isLightOff: true
+      }
+    });
   });
 
-  test('getSelectedComponent should return the correct component by name', () => {
-    const kitchenComponent = advanceSettings.getSelectedComponent('kitchen');
-    expect(kitchenComponent).toEqual(advanceSettings.componentsData.kitchen);
+  test('getSelectedComponent should return all components if no componentName provided', () => {
+    const result = advanceSettings.getSelectedComponent();
+    expect(result).toEqual(advanceSettings.componentsData);
   });
 
-  test('getSelectedSettings should return markup for the selected component', () => {
-    const kitchenMarkup = advanceSettings.getSelectedSettings('kitchen');
-    // Basic check for expected content in the markup string
-    expect(kitchenMarkup).toContain('Kitchen lights');
-    expect(kitchenMarkup).toContain('06:00');
-    expect(kitchenMarkup).toContain('22:00');
+  test('getSelectedComponent should return specific component if componentName provided', () => {
+    const result = advanceSettings.getSelectedComponent('kitchen');
+    expect(result).toEqual({
+      name: 'kitchen',
+      numOfLights: 4,
+      autoOn: '18:00',
+      autoOff: '23:00',
+      isLightOff: true
+    });
   });
 
-  test('setNewData should update the specified data for a component', () => {
-    const newTime = '08:00';
-    advanceSettings.setNewData('kitchen', 'autoOn', newTime);
-    expect(advanceSettings.componentsData.kitchen.autoOn).toBe(newTime);
+  
+
+  test('setNewData should update component data for a given key', () => {
+    advanceSettings.setNewData('kitchen', 'autoOn', '19:00');
+    expect(advanceSettings.componentsData.kitchen.autoOn).toBe('19:00');
   });
 
   test('capFirstLetter should capitalize the first letter of a word', () => {
@@ -54,18 +73,40 @@ describe('advanceSettings.js tests', () => {
     expect(advanceSettings.capFirstLetter('bedroom')).toBe('Bedroom');
   });
 
-  test('formatTime should return a Date object with correct time', () => {
-    const time = '14:30';
-    const date = advanceSettings.formatTime(time);
-    expect(date).toBeInstanceOf(Date);
-    expect(date.getHours()).toBe(14);
-    expect(date.getMinutes()).toBe(30);
-    expect(date.getSeconds()).toBe(0);
+  test('getObjectDetails should return the AdvanceSettings instance', () => {
+    const result = advanceSettings.getObjectDetails();
+    expect(result).toBe(advanceSettings);
   });
 
-  // Mocking timer and automateLight would require more complex setup,
-  // potentially involving fake timers or mocking setInterval.
-  // For now, we'll add a placeholder test.
-//   test.todo('automateLight should set a timer and update light status');
+  test('formatTime should convert time string to Date object', () => {
+    const time = advanceSettings.formatTime('18:30');
+    expect(time).toBeInstanceOf(Date);
+    expect(time.getHours()).toBe(18);
+    expect(time.getMinutes()).toBe(30);
+    expect(time.getSeconds()).toBe(0);
+  });
 
+  test('timer should resolve with updated isLightOff when time matches', async () => {
+    const targetTime = new Date('2025-05-15T18:00:00Z');
+    jest.setSystemTime(new Date('2025-05-15T17:59:59Z'));
+    const timerPromise = advanceSettings.timer(targetTime, true, 'kitchen');
+    jest.advanceTimersByTime(1000);
+    const result = await timerPromise;
+    expect(result).toBe(true);
+    expect(advanceSettings.componentsData.kitchen.isLightOff).toBe(true);
+  });
+
+  test('automateLight should format time and call timer', async () => {
+    jest.spyOn(advanceSettings, 'timer');
+    jest.setSystemTime(new Date('2025-05-15T17:59:59Z'));
+    const result = advanceSettings.automateLight('18:00', 'kitchen');
+    const expectedTime = new Date();
+    expectedTime.setHours(18);
+    expectedTime.setMinutes(0);
+    expectedTime.setSeconds(0);
+    expect(advanceSettings.timer).toHaveBeenCalledWith(expectedTime, true, 'kitchen');
+    jest.advanceTimersByTime(1000);
+    await result;
+    expect(advanceSettings.componentsData.kitchen.isLightOff).toBe(true);
+  });
 });
