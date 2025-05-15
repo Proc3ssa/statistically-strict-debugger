@@ -66,6 +66,6 @@ describe('advanceSettings.js tests', () => {
   // Mocking timer and automateLight would require more complex setup,
   // potentially involving fake timers or mocking setInterval.
   // For now, we'll add a placeholder test.
-  test.todo('automateLight should set a timer and update light status');
+//   test.todo('automateLight should set a timer and update light status');
 
 });
