@@ -1,13 +1,8 @@
 import General, { Component } from "./general";
 
 class AdvanceSettings extends General {
-    // Assuming componentsData is inherited from General or initialized elsewhere
-    // It appears to be an object mapping component names (lowercase string) to Component objects
     constructor () {
         super();
-        // Initialize properties if not inherited from General
-        // this.componentsData = {};
-        // this.isLightOff = false;
     }
 
     markup (component: Component): string {
@@ -124,7 +119,7 @@ class AdvanceSettings extends General {
                     now.getSeconds() === time.getSeconds()
                 ) {
                     console.log(message);
-                    this.isLightOff = false; // This seems inconsistent with the message parameter
+                    this.isLightOff = false;
                     const component = this.componentsData[componentName];
                     if (component) {
                         component.isLightOff = message;
@@ -135,19 +130,12 @@ class AdvanceSettings extends General {
                 }
             };
 
-            // Check every second
             const intervalId = setInterval(checkAndTriggerAlarm, 1000);
-
-            // Optional: Add a mechanism to clear the interval if needed
-            // For example, after a certain time or condition is met
-            // setTimeout(() => clearInterval(intervalId), 24 * 60 * 60 * 1000); // Clear after 24 hours
         });
     }
 
     async automateLight (time: string, componentName: string): Promise<boolean | undefined> {
         const formattedTime = this.formatTime(time);
-        // Assuming automateLight is intended to turn the light ON at the specified time
-        // The `true` message in timer suggests turning the light ON.
         return await this.timer(formattedTime, true, componentName);
     }
 }
