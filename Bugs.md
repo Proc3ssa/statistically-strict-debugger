@@ -6,7 +6,7 @@ This document outlines the bugs identified and fixed in the JavaScript files of 
 
 **Description:** The strict mode directive in `main.js` was misspelled as `'use script'` instead of `'use strict'`.
 
-**Solution:** Corrected the directive to `'use strict'`.
+**Solution:** Corrected the directive to `'use strict'`
 
 ## Bug 2: Incorrect Timeout Duration in `main.js`
 
