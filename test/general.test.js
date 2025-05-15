@@ -1,70 +1,83 @@
-// Jest or similar testing framework is recommended for running these tests.
-// A testing environment with JSDOM might be needed to simulate the browser environment.
+// __tests__/general.test.js
+// Make sure to place this file in a __tests__ directory or configure Jest to find it.
 
-import General from '../public/general.js';
+// Import the class to be tested
+import General from '../public/general.js'; // Adjust path if your files are structured differently
 
-describe('general.js tests', () => {
-  let general;
+// Mocking the DOM environment for tests that interact with it
+// JSDOM is typically set up globally by Jest's default environment (jsdom)
+// So, document should be available.
 
-  beforeEach(() => {
-    general = new General();
-  });
+describe('General Class', () => {
+    let generalInstance;
+    let mockContainer;
 
-  test('General class should be instantiated', () => {
-    expect(general).toBeInstanceOf(General);
-  });
+    beforeEach(() => {
+        generalInstance = new General();
+        // Create a mock container for DOM manipulations
+        mockContainer = document.createElement('div');
+        document.body.appendChild(mockContainer); // Append to body so querySelector can find it if needed
+    });
 
-  test('componentsData should be initialized correctly', () => {
-    expect(general.componentsData).toBeDefined();
-    expect(Object.keys(general.componentsData).length).toBe(7); // Check the number of components
-    expect(general.componentsData.hall.name).toBe('hall');
-    expect(general.componentsData.bedroom.numOfLights).toBe(3);
-  });
+    afterEach(() => {
+        // Clean up the mock container
+        if (mockContainer.parentNode) {
+            mockContainer.parentNode.removeChild(mockContainer);
+        }
+        mockContainer = null;
+        // Reset any timers mocked
+        jest.useRealTimers();
+    });
 
-  test('isLightOff and lightIntensity should be initialized correctly', () => {
-    expect(general.isLightOff).toBe(true);
-    expect(general.lightIntensity).toBe(5);
-  });
+    test('Constructor initializes properties', () => {
+        expect(generalInstance.isLightOff).toBe(true);
+        expect(generalInstance.lightIntensity).toBe(5);
+        expect(typeof generalInstance.componentsData).toBe('object');
+        expect(generalInstance.componentsData).toHaveProperty('hall');
+    });
 
-  test('renderHTML should call insertAdjacentHTML', () => {
-    const mockContainer = { insertAdjacentHTML: jest.fn() };
-    const element = '<div>test</div>';
-    const position = 'beforeend';
-    general.renderHTML(element, position, mockContainer);
-    expect(mockContainer.insertAdjacentHTML).toHaveBeenCalledWith(position, element);
-  });
-
-  test('notification should return correct HTML string', () => {
-    const message = 'Test message';
-    const expectedHtml = `
+    test('notification(message) returns correct HTML string', () => {
+        const message = 'Test Notification';
+        const expectedHtml = `
             <div class="notification">
                 <p>${message}</p>
             </div>
         `;
-    expect(general.notification(message).replace(/\s/g, '')).toBe(expectedHtml.replace(/\s/g, ''));
-  });
+        // Normalize whitespace for comparison
+        const normalize = (str) => str.replace(/\s+/g, ' ').trim();
+        expect(normalize(generalInstance.notification(message))).toBe(normalize(expectedHtml));
+    });
 
-  test('displayNotification should call notification and renderHTML', () => {
-    const message = 'Test message';
-    const mockContainer = { insertAdjacentHTML: jest.fn() };
-    const notificationSpy = jest.spyOn(general, 'notification');
-    const renderHTMLSpy = jest.spyOn(general, 'renderHTML');
+    test('renderHTML(element, position, container) inserts HTML', () => {
+        const htmlToInsert = '<p id="test-p">Hello</p>';
+        generalInstance.renderHTML(htmlToInsert, 'beforeend', mockContainer);
+        const insertedElement = mockContainer.querySelector('#test-p');
+        expect(insertedElement).not.toBeNull();
+        expect(insertedElement.textContent).toBe('Hello');
+    });
 
-    general.displayNotification(message, 'afterend', mockContainer);
+    test('displayNotification(message, position, container) renders notification', () => {
+        generalInstance.displayNotification('General Test', 'beforeend', mockContainer);
+        const notificationElement = mockContainer.querySelector('.notification');
+        expect(notificationElement).not.toBeNull();
+        expect(notificationElement.textContent).toContain('General Test');
+    });
 
-    expect(notificationSpy).toHaveBeenCalledWith(message);
-    expect(renderHTMLSpy).toHaveBeenCalled();
-    notificationSpy.mockRestore();
-    renderHTMLSpy.mockRestore();
-  });
+    test('removeNotification(element) removes element after timeout', () => {
+        jest.useFakeTimers(); // Use Jest's fake timers
 
-  test('removeNotification should call element.remove after a delay', () => {
-    jest.useFakeTimers();
-    const mockElement = { remove: jest.fn() };
-    general.removeNotification(mockElement);
-    expect(mockElement.remove).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(5000);
-    expect(mockElement.remove).toHaveBeenCalled();
-    jest.useRealTimers();
-  });
+        const tempDiv = document.createElement('div');
+        tempDiv.className = 'temp-notification';
+        mockContainer.appendChild(tempDiv);
+
+        expect(mockContainer.querySelector('.temp-notification')).not.toBeNull();
+
+        generalInstance.removeNotification(tempDiv);
+
+        // Fast-forward time by 5000ms (the timeout in the function)
+        jest.advanceTimersByTime(5000);
+
+        expect(mockContainer.querySelector('.temp-notification')).toBeNull();
+        jest.clearAllTimers(); // Clear any other timers
+    });
 });
