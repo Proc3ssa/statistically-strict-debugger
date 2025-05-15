@@ -16,7 +16,28 @@ Here are some mock screenshots of the application:
 
 ## Getting Started
 
-(Add instructions on how to set up and run the project here)
+To set up and run this project, follow these steps:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Proc3ssa/statically-strict-debugger.git
+    ```
+2.  **Navigate to the project directory:**
+    ```bash
+    cd statically-strict-debugger
+    ```
+3.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+    This will install all necessary dependencies, including TypeScript and Jest.
+4.  **Compile the TypeScript files:**
+    ```bash
+    npx tsc
+    ```
+    This command compiles the TypeScript files in the `src` folder into JavaScript files in the `public` folder.
+5.  **Open the `index.html` file:**
+    Open the `index.html` file in your web browser to run the application.
 
 ## Testing
 
